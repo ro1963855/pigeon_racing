@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # pigeon_racing
 
 > A Vue.js project
@@ -19,3 +20,6 @@ npm run build --report
 ```
 
 For detailed explanation on how things work, checkout the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+=======
+# pigeon_racing
+>>>>>>> 30edb8f9cc248dbc430d3793b3eebea496af4e70
