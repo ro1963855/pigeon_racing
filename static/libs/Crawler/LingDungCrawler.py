@@ -11,6 +11,7 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+from pyvirtualdisplay import Display
 
 class LingDungCrawler(PigeonDataCrawler):
 	websiteLink = 'http://61.219.217.105/msg/message_results_fast.asp'
@@ -23,7 +24,9 @@ class LingDungCrawler(PigeonDataCrawler):
 		super(LingDungCrawler, self).__init__(self.websiteLink, self.outputFileName, self.encodeType, self.showColumn, self.ensure_ascii)
 
 	def getHtmlContent(self, union, date):
-		driver = webdriver.Chrome(executable_path=r'C:\Python27\Scripts\chromedriver.exe')
+		display = Display(visible=0, size=(800, 600))
+		display.start()
+		driver = webdriver.Chrome(executable_path=r'./chromedriver/chromedriver')
 		completeWebsiteLink = self.websiteLink + '?Udate=' + date + '&Ucgp=' + union
 		driver.get(completeWebsiteLink)
 		driver.add_cookie({
@@ -55,6 +58,7 @@ class LingDungCrawler(PigeonDataCrawler):
 		   nextPage -= 1
 		   
 		driver.close()
+		display.stop()
 		return res;	
 		
 	def getCurrentPage(self, htmlContent, showColumn):
