@@ -3,7 +3,14 @@
 import Vue from 'vue'
 import App from './App'
 import router from './router'
+import BootstrapVue from 'bootstrap-vue';
+import Icon from 'vue-awesome/components/Icon'
+import 'vue-awesome/icons'
+import 'bootstrap-vue/dist/bootstrap-vue.css';
+import 'bootstrap/dist/css/bootstrap.css';
 
+Vue.use(BootstrapVue);
+Vue.component('icon', Icon)
 Vue.config.productionTip = false
 
 /* eslint-disable no-new */
