@@ -29,7 +29,7 @@
 <style>
   .fa-icon {
     width: auto;
-    height: 1em; /* or any other relative font sizes */
+    height: 1em;
   }
 
   .p_brand {
