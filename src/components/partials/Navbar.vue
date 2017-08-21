@@ -3,31 +3,33 @@
     <b-navbar toggleable type="light" variant="info" toggle-breakpoint="md">
       <b-navbar-brand class="p_brand" href="/"><icon name="twitter"></icon>Pigeon</b-navbar-brand>
       <b-nav is-nav-bar class="col-md-4 ml-auto">
-        <b-form-select class="p-website-select" v-if="isDataReady" v-model="websiteSelected" :options="websites">
-        </b-form-select>
-        <b-form-select class="p-website-select" v-if="isDataReady" v-model="pigeonarySelected" :options="websites[websiteSelected].pigeonarys">
-        </b-form-select>
+        <select v-if="isDataReady" class="p-website-select form-control custom-select" @change="websiteSelectOnChange($event.target.value)">
+          <optgroup v-for="(websiteValue, websiteKey) in websites" :label="websiteValue.chineseName">
+            <option v-for="(groupValue, groupKey) in websiteValue.Group" :value="websiteKey + '|' + groupKey" :selected="groupKey == groupSelected">{{groupValue.chineseName}}</option>
+          </optgroup>
+        </select>
+        <select v-if="isDataReady" class="p-website-select form-control custom-select" @change="pigeonarySelectOnChange($event.target.value)">
+          <option v-for="pigeonary in websites[websiteSelected].Group[groupSelected].pigenorys" :value="pigeonary.val" :selected="pigeonary.val == pigeonarySelected">{{pigeonary.text}}</option>
+        </select>
       </b-nav>
     </b-navbar>
   </div>
 </template>
 
 <script>
-  var username = 'dad';
+  var username = 'dandy2';
   var userRef = firebase.database().ref('/users/' + username);
+  var websitesRef = firebase.database().ref('/websites');
 
   export default {
     name: 'p-navbar',
     data () {
       return {
         websiteSelected: null,
+        groupSelected: null,
         pigeonarySelected: null,
-        isDataReady: false,
-        message: 0,
-        websites: [
-          {value: '0', text: "鴿神一號", pigeonarys:[{value: '27', text: "永靖中山傳訊(冬)"}]},
-          {value: '1', text: "嶺東資訊", pigeonarys:[{value: '1606', text: "金溪湖鴿會"}]}
-        ]
+        websites: null,
+        isDataReady: false
       }
     },
     watch: {
@@ -37,7 +39,15 @@
             websiteSelected: val
           })
 
-          this.pigeonarySelected = this.websites[val].pigeonarys[0].value;
+        }
+
+      },
+      groupSelected: function(val, oldVal){
+        if (oldVal != null) {
+          userRef.update({
+            groupSelected: val
+          })
+
         }
 
       },
@@ -50,35 +60,61 @@
       }
     },
     methods: {
+        getWebsitesData () {
+          let vm = this;
+          websitesRef.once('value', function(snapshot){
+            vm.websites = snapshot.val();
+            vm.checkUserRecord();
+          })
+        },
         checkUserRecord () {
           let vm = this;
-          let websiteSelected = this.websites[0].value;
-          let pigeonarySelected = this.websites[0].pigeonarys[0].value;
+          let group = this.getObjectByIndex(this.websites, 0);
+          let websiteSelected = group.key;
+          let pigeonary = this.getObjectByIndex(group.obj.Group, 0);
+          let groupSelected = pigeonary.key;                    
+          let pigeonarySelected = pigeonary.obj.pigenorys[0].val;
           userRef.once('value', function(snapshot){
             let val = snapshot.val();
             if (val === null) {
-              vm.addUserInfo(username, websiteSelected, pigeonarySelected);
+              vm.addUserInfo(username, websiteSelected, groupSelected, pigeonarySelected);
             }
             else {
               websiteSelected = val.websiteSelected;
+              groupSelected = val.groupSelected;
               pigeonarySelected = val.pigeonarySelected;
             }
 
             vm.websiteSelected = websiteSelected;
+            vm.groupSelected = groupSelected;
             vm.pigeonarySelected = pigeonarySelected;
             vm.isDataReady = true;
           })
 
         },
-        addUserInfo (username, websiteSelected, pigeonarySelected) {
+        addUserInfo (username, websiteSelected, groupSelected, pigeonarySelected) {
           userRef.set({
             websiteSelected: websiteSelected,
+            groupSelected: groupSelected,
             pigeonarySelected: pigeonarySelected
           })
+        },
+        websiteSelectOnChange (websiteSelect) {
+          var websiteSelectSplit = websiteSelect.split("|");
+          this.websiteSelected = websiteSelectSplit[0];
+          this.groupSelected = websiteSelectSplit[1];
+          this.pigeonarySelected = this.websites[this.websiteSelected].Group[this.groupSelected].pigenorys[0];
+        },
+        pigeonarySelectOnChange (pigeonarySelect) {
+          this.pigeonarySelected =  pigeonarySelect;
+        },
+        getObjectByIndex (obj, index) {
+          var keys = Object.keys( obj );
+          return {obj: obj[keys[index]], key: keys[index]};
         }
     },
     created () {
-      this.checkUserRecord();
+      this.getWebsitesData();
     }
   }
 </script>
