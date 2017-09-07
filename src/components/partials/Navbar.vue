@@ -9,7 +9,7 @@
           </optgroup>
         </select>
         <select v-if="isDataReady" class="p-website-select form-control custom-select" @change="pigeonarySelectOnChange($event.target.value)">
-          <option v-for="pigeonary in websites[websiteSelected].Group[groupSelected].pigenorys" :value="pigeonary.val" :selected="pigeonary.val == pigeonarySelected">{{pigeonary.text}}</option>
+          <option v-for="(pigeonaryValue, pigeonaryKey) in websites[websiteSelected].Group[groupSelected].pigenorys" :value="pigeonaryKey" :selected="pigeonaryKey == pigeonarySelected">{{pigeonaryValue.text}}</option>
         </select>
       </b-nav>
     </b-navbar>
@@ -17,8 +17,9 @@
 </template>
 
 <script>
-  var username = 'dandy2';
-  var userRef = firebase.database().ref('/users/' + username);
+  import Config from '../../../static/js/config.js'
+  
+  var userRef = firebase.database().ref('/users/' + Config.username);
   var websitesRef = firebase.database().ref('/websites');
 
   export default {
@@ -69,11 +70,12 @@
         },
         checkUserRecord () {
           let vm = this;
-          let group = this.getObjectByIndex(this.websites, 0);
-          let websiteSelected = group.key;
-          let pigeonary = this.getObjectByIndex(group.obj.Group, 0);
-          let groupSelected = pigeonary.key;                    
-          let pigeonarySelected = pigeonary.obj.pigenorys[0].val;
+          let website = this.getObjectByIndex(this.websites, 0);
+          let websiteSelected = website.key;
+          let group = this.getObjectByIndex(website.obj.Group, 0);
+          let groupSelected = group.key; 
+          let pigeonary = this.getObjectByIndex(group.obj.pigenorys, 0);                   
+          let pigeonarySelected = pigeonary.key;
           userRef.once('value', function(snapshot){
             let val = snapshot.val();
             if (val === null) {
@@ -103,7 +105,8 @@
           var websiteSelectSplit = websiteSelect.split("|");
           this.websiteSelected = websiteSelectSplit[0];
           this.groupSelected = websiteSelectSplit[1];
-          this.pigeonarySelected = this.websites[this.websiteSelected].Group[this.groupSelected].pigenorys[0];
+          let pigeonary = this.getObjectByIndex(this.websites[this.websiteSelected].Group[this.groupSelected].pigenorys, 0);
+          this.pigeonarySelected = pigeonary.key;
         },
         pigeonarySelectOnChange (pigeonarySelect) {
           this.pigeonarySelected =  pigeonarySelect;
